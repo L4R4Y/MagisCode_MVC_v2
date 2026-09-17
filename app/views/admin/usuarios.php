@@ -6,41 +6,11 @@ require __DIR__ . '/../partials/header.php';
 ?>
 
 <?php if (isset($_GET['ok'])): ?>
-    <div class="success">
-        Usuario creado correctamente.
-        <?php if (isset($_GET['correo'])): ?>
-            Se envió un correo al aprendiz avisándole que ya tiene un usuario en MagisCode.
-        <?php endif; ?>
-    </div>
+    <div class="success">Usuario creado correctamente.</div>
 <?php endif; ?>
 
 <?php if (isset($_GET['editado'])): ?>
     <div class="success">Datos del usuario actualizados correctamente.</div>
-<?php endif; ?>
-
-<?php if (!empty($usuarioCreado)): ?>
-    <div class="panel">
-        <h2>Credenciales del nuevo usuario</h2>
-        <p class="form-note">Guarda estas credenciales. Una vez recargues la página, no podrás volver a ver la contraseña.</p>
-
-        <table class="table" style="max-width:480px">
-            <tbody>
-                <tr>
-                    <th>Usuario</th>
-                    <td><code><?= htmlspecialchars($usuarioCreado['username']) ?></code></td>
-                </tr>
-                <tr>
-                    <th>Contraseña temporal</th>
-                    <td><code><?= htmlspecialchars($usuarioCreado['password']) ?></code></td>
-                </tr>
-            </tbody>
-        </table>
-
-        <p class="form-note">
-            Si el rol es Aprendiz, la contraseña se envía automaticamente al correo registrado
-            (revisa <code>correo_debug.log</code> en modo desarrollo).
-        </p>
-    </div>
 <?php endif; ?>
 
 <div class="stats">

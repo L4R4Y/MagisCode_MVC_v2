@@ -21,9 +21,6 @@ class AdminController
         $rol = trim($_GET['rol'] ?? '');
         $usuarios = (new Usuario())->listar($q, $rol);
 
-        $usuarioCreado = $_SESSION['usuario_creado'] ?? null;
-        unset($_SESSION['usuario_creado']);
-
         require __DIR__ . '/../views/admin/usuarios.php';
     }
 
@@ -133,31 +130,12 @@ class AdminController
                         'tipo_documento' => $d['tipo_documento'],
                     ]);
 
-                    $_SESSION['usuario_creado'] = [
-                        'username' => $usernameGenerado,
-                        'password' => $passwordGenerado,
-                    ];
-
                     Correo::registrarCredencialesDebug(
-                        $d['correo'],
-                        trim($d['nombre'] . ' ' . $d['apellido']),
                         $usernameGenerado,
-                        $passwordGenerado,
-                        $d['rol']
+                        $passwordGenerado
                     );
 
-                    $correoEnviado = false;
-                    if ($d['rol'] === 3) {
-                        $correoEnviado = Correo::enviarCuentaCreada(
-                            $d['correo'],
-                            trim($d['nombre'] . ' ' . $d['apellido']),
-                            $usernameGenerado,
-                            $passwordGenerado
-                        );
-                    }
-
-                    $qs = 'ok=1' . ($correoEnviado ? '&correo=1' : '');
-                    header('Location:index.php?route=usuarios&' . $qs);
+                    header('Location:index.php?route=usuarios&ok=1');
                     exit;
                 } catch (Throwable $e) {
                     $error = 'No fue posible crear el usuario. Verifica que documento, correo y usuario no estén repetidos.';

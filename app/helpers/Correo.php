@@ -47,30 +47,16 @@ class Correo
      * dejar constancia de las credenciales generadas.
      */
     public static function registrarCredencialesDebug(
-        string $correo,
-        string $nombreCompleto,
         string $username,
-        string $passwordTemporal,
-        int $rol
+        string $passwordTemporal
     ): bool {
-        $rolNombre = match ($rol) {
-            1 => 'Administrador',
-            2 => 'Instructor',
-            3 => 'Aprendiz',
-            default => 'Desconocido',
-        };
-
-        $registro = "===== " . date('Y-m-d H:i:s') . " =====\n"
-            . "Nuevo usuario creado ({$rolNombre})\n"
-            . "Para: {$correo}\n"
-            . "Usuario: {$username}\n"
-            . "Contraseña temporal: {$passwordTemporal}\n"
-            . "Nombre: {$nombreCompleto}\n\n";
+        $registro = "Usuario: {$username}\n"
+            . "Contraseña temporal: {$passwordTemporal}\n";
 
         return (bool) file_put_contents(
             __DIR__ . '/../../correo_debug.log',
             $registro,
-            FILE_APPEND
+            LOCK_EX
         );
     }
 
@@ -96,7 +82,7 @@ class Correo
             return (bool) file_put_contents(
                 __DIR__ . '/../../correo_debug.log',
                 $registro,
-                FILE_APPEND
+                LOCK_EX
             );
         }
 
