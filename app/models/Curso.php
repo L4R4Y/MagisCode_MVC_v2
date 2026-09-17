@@ -63,6 +63,15 @@ class Curso extends Model
         return (int) $this->db->lastInsertId();
     }
 
+    public function cambiarEstado(int $id, string $estado): bool
+    {
+        $stmt = $this->db->prepare(
+            'UPDATE curso SET estado_curso = ? WHERE id_curso = ?'
+        );
+
+        return $stmt->execute([$estado, $id]);
+    }
+
     public function asignar(int $cursoId, int $aprendizId): bool
     {
         $stmt = $this->db->prepare(

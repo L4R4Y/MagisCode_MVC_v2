@@ -6,7 +6,7 @@ require __DIR__ . '/../partials/header.php';
 <div class="panel">
     <p class="form-note">Los campos marcados con <span class="req">*</span> son obligatorios.</p>
 
-    <form method="post" class="form-grid">
+    <form method="post" enctype="multipart/form-data" class="form-grid">
         <div class="field full">
             <label>Título del curso <span class="req">*</span></label>
             <input name="titulo" required>
@@ -16,8 +16,9 @@ require __DIR__ . '/../partials/header.php';
             <textarea name="descripcion" required></textarea>
         </div>
         <div class="field full">
-            <label>Ruta de imagen (opcional)</label>
-            <input name="imagen" placeholder="img/python_basico.jpg">
+            <label>Imagen del curso (opcional)</label>
+            <input type="file" name="imagen" accept="image/*">
+            <span class="field-hint">Formatos permitidos: JPG, JPEG, PNG. Máximo 2 MB.</span>
         </div>
         <div class="field full">
             <button class="btn btn-primary">Guardar curso</button>
