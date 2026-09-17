@@ -40,6 +40,7 @@ $rutas = [
     'crear-leccion' => ['CursoController', 'leccion'],
     'crear-recurso' => ['CursoController', 'recurso'],
     'instructor-aprendices' => ['CursoController', 'aprendices'],
+    'agregar-aprendices' => ['CursoController', 'agregarAprendices'],
     'cambiar-estado-curso' => ['CursoController', 'estado'],
 
     'evaluaciones-instructor' => ['EvaluacionController', 'instructor'],

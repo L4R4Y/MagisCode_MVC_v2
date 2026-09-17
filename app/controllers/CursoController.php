@@ -163,6 +163,11 @@ class CursoController
                 exit('Formato no permitido');
             }
 
+            // Límite de 100 MB para recursos (videos y PDFs)
+            if ($archivo['size'] > 100 * 1024 * 1024) {
+                exit('El archivo es demasiado grande (máx. 100 MB).');
+            }
+
             $directorio = __DIR__ . '/../../uploads/recursos';
             if (!is_dir($directorio)) {
                 mkdir($directorio, 0777, true);
@@ -196,6 +201,7 @@ class CursoController
         if (!$cursos) {
             $curso = null;
             $apr = [];
+            $disponibles = [];
             require __DIR__ . '/../views/instructor/aprendices.php';
             return;
         }
@@ -213,6 +219,7 @@ class CursoController
         }
 
         $apr = $modelo->aprendicesCurso($id);
+        $disponibles = $modelo->aprendicesDisponibles($id);
 
         require __DIR__ . '/../views/instructor/aprendices.php';
     }
@@ -235,6 +242,36 @@ class CursoController
         $modelo->cambiarEstado($id, $estado);
 
         header('Location: index.php?route=cursos');
+        exit;
+    }
+
+    public function agregarAprendices(): void
+    {
+        $this->permitirRoles(2);
+
+        if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+            http_response_code(405);
+            exit('Método no permitido');
+        }
+
+        $cursoId = (int) ($_POST['curso_id'] ?? 0);
+        $aprendizIds = $_POST['aprendiz_ids'] ?? [];
+
+        $modelo = new Curso();
+        $curso = $modelo->uno($cursoId);
+
+        if (!$curso || (int) $curso['id_usuario_c'] !== (int) $_SESSION['usuario']) {
+            http_response_code(403);
+            exit('No autorizado');
+        }
+
+        if (!empty($aprendizIds)) {
+            foreach ($aprendizIds as $aprendizId) {
+                $modelo->asignar($cursoId, (int) $aprendizId);
+            }
+        }
+
+        header('Location: index.php?route=instructor-aprendices&id=' . $cursoId);
         exit;
     }
 }

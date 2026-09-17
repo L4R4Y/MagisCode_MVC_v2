@@ -112,6 +112,25 @@ class Curso extends Model
         return $stmt->fetchAll();
     }
 
+    public function aprendicesDisponibles(int $cursoId): array
+    {
+        $sql = 'SELECT u.id_usuario, u.nombre, u.apellido, u.correo, u.username
+                FROM usuario u
+                WHERE u.id_rol_u = 3
+                  AND u.id_estado_u = 1
+                  AND u.id_usuario NOT IN (
+                      SELECT ca.id_usuario_c_a
+                      FROM curso_aprendiz ca
+                      WHERE ca.id_curso_c_a = ?
+                  )
+                ORDER BY u.nombre, u.apellido';
+
+        $stmt = $this->db->prepare($sql);
+        $stmt->execute([$cursoId]);
+
+        return $stmt->fetchAll();
+    }
+
     /**
      * Reporte de rendimiento de los cursos de un instructor: cantidad de
      * aprendices y avance promedio por curso, además de los totales
