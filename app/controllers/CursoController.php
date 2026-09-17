@@ -163,6 +163,11 @@ class CursoController
                 exit('Formato no permitido');
             }
 
+            // Límite de 100 MB para recursos (videos y PDFs)
+            if ($archivo['size'] > 100 * 1024 * 1024) {
+                exit('El archivo es demasiado grande (máx. 100 MB).');
+            }
+
             $directorio = __DIR__ . '/../../uploads/recursos';
             if (!is_dir($directorio)) {
                 mkdir($directorio, 0777, true);
