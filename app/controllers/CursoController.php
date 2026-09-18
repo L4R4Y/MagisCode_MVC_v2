@@ -3,6 +3,7 @@
 require_once __DIR__ . '/../models/Curso.php';
 require_once __DIR__ . '/../models/Contenido.php';
 require_once __DIR__ . '/../models/Evaluacion.php';
+require_once __DIR__ . '/../helpers/VideoInfo.php';
 
 class CursoController
 {
@@ -87,6 +88,9 @@ class CursoController
         }
 
         $rol = (int) $_SESSION['rol_id'];
+        $miAvance = $rol === 3
+            ? $modelo->calcularAvance($id, (int) $_SESSION['usuario'])
+            : null;
 
         if ($rol === 2 && (int) $curso['id_usuario_c'] !== (int) $_SESSION['usuario']) {
             exit('No tienes acceso a este curso.');
@@ -104,10 +108,22 @@ class CursoController
             if (!$inscrito) {
                 exit('No tienes acceso a este curso.');
             }
+
+            $modelo->actualizarAvance($id, (int) $_SESSION['usuario']);
+            $recursosVistos = $modelo->recursosVistosCurso($id, (int) $_SESSION['usuario']);
+        } else {
+            $recursosVistos = [];
         }
 
         $modulos = (new Contenido())->modulos($id);
         $evaluaciones = (new Evaluacion())->porCurso($id);
+
+        $totalRecursos = 0;
+        foreach ($modulos as $modulo) {
+            foreach ($modulo['lecciones'] as $leccion) {
+                $totalRecursos += count($leccion['recursos'] ?? []);
+            }
+        }
 
         require __DIR__ . '/../views/curso.php';
     }
@@ -155,6 +171,7 @@ class CursoController
         $archivo = $_FILES['archivo'] ?? null;
         $ruta = trim($_POST['ruta'] ?? '');
         $tipo = 'PDF';
+        $duracion = 0;
 
         if ($archivo && $archivo['error'] === UPLOAD_ERR_OK) {
             $extension = strtolower(pathinfo($archivo['name'], PATHINFO_EXTENSION));
@@ -178,14 +195,21 @@ class CursoController
 
             $ruta = 'uploads/recursos/' . $nombreArchivo;
             $tipo = strtoupper($extension);
+
+            if ($tipo === 'MP4') {
+                $duracion = VideoInfo::duracionSegundos($directorio . '/' . $nombreArchivo) ?? 0;
+            }
         }
 
         (new Contenido())->crearRecurso([
             'nombre' => trim($_POST['nombre']),
             'tipo' => $tipo,
             'ruta' => $ruta,
+            'duracion' => $duracion,
             'leccion' => (int) $_POST['leccion'],
         ]);
+
+        (new Curso())->actualizarDuracion((int) $_POST['curso']);
 
         header('Location: index.php?route=curso&id=' . (int) $_POST['curso']);
         exit;
@@ -242,6 +266,27 @@ class CursoController
         $modelo->cambiarEstado($id, $estado);
 
         header('Location: index.php?route=cursos');
+        exit;
+    }
+
+    public function marcarVisto(): void
+    {
+        $this->permitirRoles(3);
+
+        $id = (int) ($_GET['recurso'] ?? 0);
+        $cursoId = (int) ($_GET['curso'] ?? 0);
+
+        if ($id <= 0 || $cursoId <= 0) {
+            http_response_code(400);
+            exit('Parámetros inválidos');
+        }
+
+        $modelo = new Curso();
+        $modelo->marcarRecursoVisto($id, (int) $_SESSION['usuario']);
+        $modelo->actualizarAvance($cursoId, (int) $_SESSION['usuario']);
+
+        header('Content-Type: application/json');
+        echo json_encode(['ok' => true]);
         exit;
     }
 

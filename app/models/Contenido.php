@@ -67,10 +67,16 @@ class Contenido extends Model
     public function crearRecurso(array $datos): int
     {
         $stmt = $this->db->prepare(
-            'INSERT INTO recurso (nombre_recurso, tipo_recurso, ruta_archivo, id_leccion_r)
-             VALUES (?, ?, ?, ?)'
+            'INSERT INTO recurso (nombre_recurso, tipo_recurso, ruta_archivo, duracion, id_leccion_r)
+             VALUES (?, ?, ?, ?, ?)'
         );
-        $stmt->execute([$datos['nombre'], $datos['tipo'], $datos['ruta'], $datos['leccion']]);
+        $stmt->execute([
+            $datos['nombre'],
+            $datos['tipo'],
+            $datos['ruta'],
+            $datos['duracion'] ?? 0,
+            $datos['leccion'],
+        ]);
 
         return (int) $this->db->lastInsertId();
     }

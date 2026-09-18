@@ -72,6 +72,27 @@ class Curso extends Model
         return $stmt->execute([$estado, $id]);
     }
 
+    public function actualizarDuracion(int $cursoId): bool
+    {
+        try {
+            $stmt = $this->db->prepare(
+                'UPDATE curso c
+                 SET duracion_total = COALESCE((
+                     SELECT SUM(r.duracion)
+                     FROM recurso r
+                     JOIN leccion l ON l.id_leccion = r.id_leccion_r
+                     JOIN modulo m ON m.id_modulo = l.id_modulo_l
+                     WHERE m.id_curso_m = c.id_curso
+                 ), 0)
+                 WHERE c.id_curso = ?'
+            );
+
+            return $stmt->execute([$cursoId]);
+        } catch (PDOException $e) {
+            return false;
+        }
+    }
+
     public function asignar(int $cursoId, int $aprendizId): bool
     {
         $stmt = $this->db->prepare(
@@ -170,5 +191,73 @@ class Curso extends Model
             'total_aprendices' => $totalAprendices,
             'promedio_general' => $totalCursos ? round($sumaPromedios / $totalCursos) : 0,
         ];
+    }
+
+    public function marcarRecursoVisto(int $recursoId, int $usuarioId): bool
+    {
+        $stmt = $this->db->prepare(
+            'INSERT INTO recurso_visto (id_recurso, id_usuario)
+             VALUES (?, ?)
+             ON DUPLICATE KEY UPDATE fecha_visto = CURRENT_TIMESTAMP'
+        );
+
+        return $stmt->execute([$recursoId, $usuarioId]);
+    }
+
+    public function recursosVistosCurso(int $cursoId, int $usuarioId): array
+    {
+        $sql = 'SELECT DISTINCT r.id_recurso
+                FROM recurso_visto rv
+                JOIN recurso r ON r.id_recurso = rv.id_recurso
+                JOIN leccion l ON l.id_leccion = r.id_leccion_r
+                JOIN modulo m ON m.id_modulo = l.id_modulo_l
+                WHERE m.id_curso_m = ? AND rv.id_usuario = ?';
+
+        try {
+            $stmt = $this->db->prepare($sql);
+            $stmt->execute([$cursoId, $usuarioId]);
+            return $stmt->fetchAll(PDO::FETCH_COLUMN);
+        } catch (PDOException $e) {
+            return [];
+        }
+    }
+
+    public function calcularAvance(int $cursoId, int $usuarioId): int
+    {
+        $sql = 'SELECT
+                    COUNT(r.id_recurso) total_recursos,
+                    COALESCE(COUNT(DISTINCT rv.id_recurso), 0) recursos_vistos
+                FROM recurso r
+                JOIN leccion l ON l.id_leccion = r.id_leccion_r
+                JOIN modulo m ON m.id_modulo = l.id_modulo_l
+                LEFT JOIN recurso_visto rv ON rv.id_recurso = r.id_recurso
+                                          AND rv.id_usuario = ?
+                WHERE m.id_curso_m = ?';
+
+        try {
+            $stmt = $this->db->prepare($sql);
+            $stmt->execute([$usuarioId, $cursoId]);
+            $row = $stmt->fetch(PDO::FETCH_ASSOC);
+        } catch (PDOException $e) {
+            return 0;
+        }
+
+        if (!$row || (int) $row['total_recursos'] === 0) {
+            return 0;
+        }
+
+        return (int) round(((int) $row['recursos_vistos'] / (int) $row['total_recursos']) * 100);
+    }
+
+    public function actualizarAvance(int $cursoId, int $usuarioId): bool
+    {
+        $avance = $this->calcularAvance($cursoId, $usuarioId);
+
+        $stmt = $this->db->prepare(
+            'UPDATE curso_aprendiz SET avance = ?
+             WHERE id_curso_c_a = ? AND id_usuario_c_a = ?'
+        );
+
+        return $stmt->execute([$avance, $cursoId, $usuarioId]);
     }
 }

@@ -144,4 +144,25 @@ class Evaluacion extends Model
 
         return (int) $this->db->lastInsertId();
     }
+
+    public function cerrar(int $evaluacionId): bool
+    {
+        $stmt = $this->db->prepare(
+            'UPDATE evaluacion SET id_estado_e = 3 WHERE id_evaluacion = ?'
+        );
+
+        return $stmt->execute([$evaluacionId]);
+    }
+
+    public function estaAbierta(int $evaluacionId): bool
+    {
+        $stmt = $this->db->prepare(
+            'SELECT id_estado_e FROM evaluacion WHERE id_evaluacion = ?'
+        );
+        $stmt->execute([$evaluacionId]);
+
+        $estado = (int) $stmt->fetchColumn();
+
+        return $estado === 1;
+    }
 }

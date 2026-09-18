@@ -6,10 +6,9 @@ require __DIR__ . '/../partials/header.php';
 <?php if (!empty($error)): ?><div class="alert"><?= htmlspecialchars($error) ?></div><?php endif; ?>
 
 <div class="panel">
-    <p class="form-note">
+        <p class="form-note">
         Documento: <strong><?= htmlspecialchars($u['id_usuario']) ?></strong> &middot;
-        Usuario: <strong><?= htmlspecialchars($u['username']) ?></strong> &middot;
-        Nombre: <strong><?= htmlspecialchars($u['nombre'] . ' ' . $u['apellido']) ?></strong>
+        Usuario: <strong><?= htmlspecialchars($u['username']) ?></strong>
     </p>
 
     <form method="post" class="form-grid">
@@ -19,13 +18,13 @@ require __DIR__ . '/../partials/header.php';
         </div>
 
         <div class="field">
-            <label>Nombre</label>
-            <input value="<?= htmlspecialchars($u['nombre']) ?>" readonly disabled>
+            <label>Nombre <span class="req">*</span></label>
+            <input type="text" name="nombre" value="<?= htmlspecialchars($u['nombre']) ?>">
         </div>
 
         <div class="field">
-            <label>Apellido</label>
-            <input value="<?= htmlspecialchars($u['apellido']) ?>" readonly disabled>
+            <label>Apellido <span class="req">*</span></label>
+            <input type="text" name="apellido" value="<?= htmlspecialchars($u['apellido']) ?>">
         </div>
 
         <div class="field full">

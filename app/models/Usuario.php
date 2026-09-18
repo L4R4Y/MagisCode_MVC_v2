@@ -134,13 +134,13 @@ class Usuario extends Model
         )->fetchAll();
     }
 
-    public function actualizarDatos(int $id, string $correo, int $rol): bool
+    public function actualizarDatos(int $id, string $nombre, string $apellido, string $correo, int $rol): bool
     {
         $stmt = $this->db->prepare(
-            'UPDATE usuario SET correo = ?, id_rol_u = ? WHERE id_usuario = ?'
+            'UPDATE usuario SET nombre = ?, apellido = ?, correo = ?, id_rol_u = ? WHERE id_usuario = ?'
         );
 
-        return $stmt->execute([$correo, $rol, $id]);
+        return $stmt->execute([$nombre, $apellido, $correo, $rol, $id]);
     }
 
     public function ultimoId(): int

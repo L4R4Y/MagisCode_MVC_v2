@@ -45,14 +45,20 @@ class AdminController
         $error = '';
 
         if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+            $nombre = trim($_POST['nombre'] ?? '');
+            $apellido = trim($_POST['apellido'] ?? '');
             $correo = trim($_POST['correo'] ?? '');
             $rol = (int) $_POST['rol'];
 
-            if ($correo === '' || !filter_var($correo, FILTER_VALIDATE_EMAIL)) {
+            if ($nombre === '' || !preg_match('/^[\p{L}\s]{2,300}$/u', $nombre)) {
+                $error = 'El nombre es obligatorio (solo letras, mínimo 2 caracteres).';
+            } elseif ($apellido === '' || !preg_match('/^[\p{L}\s]{2,300}$/u', $apellido)) {
+                $error = 'El apellido es obligatorio (solo letras, mínimo 2 caracteres).';
+            } elseif ($correo === '' || !filter_var($correo, FILTER_VALIDATE_EMAIL)) {
                 $error = 'Ingresa un correo electrónico válido.';
             } else {
                 try {
-                    $modelo->actualizarDatos($id, $correo, $rol);
+                    $modelo->actualizarDatos($id, $nombre, $apellido, $correo, $rol);
                     header('Location:index.php?route=usuarios&editado=1');
                     exit;
                 } catch (Throwable $e) {
@@ -60,6 +66,8 @@ class AdminController
                 }
             }
 
+            $u['nombre'] = $nombre;
+            $u['apellido'] = $apellido;
             $u['correo'] = $correo;
             $u['id_rol_u'] = $rol;
         }

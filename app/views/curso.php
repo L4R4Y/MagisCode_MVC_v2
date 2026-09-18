@@ -7,10 +7,25 @@ require __DIR__ . '/partials/header.php';
     <div>
         <h2>Contenido del curso</h2>
         <p>Instructor: <?= htmlspecialchars($curso['instructor']) ?></p>
+        <?php if (!empty($curso['duracion_total']) && (int) $curso['duracion_total'] > 0): ?>
+            <span class="duracion-curso-titulo">
+                ⏱ <?= VideoInfo::formatearDuracion((int) $curso['duracion_total']) ?>
+            </span>
+        <?php endif; ?>
+        <?php if ($miAvance !== null): ?>
+            <div class="progreso-cursos">
+                <div class="progress-bar">
+                    <div class="progress-fill" style="width:<?= $miAvance ?>%"></div>
+                </div>
+                <span class="progreso-text"><?= $miAvance ?>% completado</span>
+            </div>
+        <?php endif; ?>
     </div>
-    <?php if ((int) $_SESSION['rol_id'] === 2): ?>
-        <a class="btn btn-primary" href="index.php?route=crear-evaluacion&curso=<?= $curso['id_curso'] ?>">+ Evaluación</a>
-    <?php endif; ?>
+    <div class="toolbar-duracion">
+        <?php if ((int) $_SESSION['rol_id'] === 2): ?>
+            <a class="btn btn-primary" href="index.php?route=crear-evaluacion&curso=<?= $curso['id_curso'] ?>">+ Evaluación</a>
+        <?php endif; ?>
+    </div>
 </div>
 
 <div class="grid">
@@ -26,11 +41,39 @@ require __DIR__ . '/partials/header.php';
                         <?php if (!empty($l['recursos'])): ?>
                             <div class="lesson-recursos">
                                 <?php foreach ($l['recursos'] as $r): ?>
-                                    <a class="recurso-link" target="_blank" href="<?= htmlspecialchars($r['ruta_archivo']) ?>">
-                                        <span class="recurso-icon"><?= $r['tipo_recurso'] === 'MP4' ? '▶' : '📄' ?></span>
-                                        <span class="recurso-nombre"><?= htmlspecialchars($r['nombre_recurso']) ?></span>
-                                        <span class="recurso-tipo"><?= htmlspecialchars($r['tipo_recurso']) ?></span>
-                                    </a>
+    <?php $visto = in_array((int) $r['id_recurso'], $recursosVistos, true); ?>
+    <?php if ($r['tipo_recurso'] === 'MP4'): ?>
+        <div class="video-recurso">
+            <div class="video-header">
+                <span class="recurso-icon">▶</span>
+                <span class="recurso-nombre"><?= htmlspecialchars($r['nombre_recurso']) ?></span>
+                <?php if (!empty($r['duracion']) && (int) $r['duracion'] > 0): ?>
+                    <span class="recurso-duracion">
+                        <?= VideoInfo::formatearDuracion((int) $r['duracion']) ?>
+                    </span>
+                <?php endif; ?>
+                <?php if ($visto): ?>
+                    <span class="recurso-visto" title="Completado">✓</span>
+                <?php endif; ?>
+                <button type="button" class="btn btn-secondary btn-sm video-open"
+                        data-ruta="<?= htmlspecialchars($r['ruta_archivo']) ?>"
+                        data-nombre="<?= htmlspecialchars($r['nombre_recurso']) ?>"
+                        data-duracion="<?= (int) ($r['duracion'] ?? 0) ?>"
+                        data-recurso="<?= (int) $r['id_recurso'] ?>">
+                    Ver video
+                </button>
+            </div>
+        </div>
+    <?php else: ?>
+        <a class="recurso-link <?php if ($visto): ?>recurso-visto-link<?php endif; ?>" target="_blank" href="<?= htmlspecialchars($r['ruta_archivo']) ?>" data-recurso="<?= (int) $r['id_recurso'] ?>">
+            <span class="recurso-icon">📄</span>
+            <span class="recurso-nombre"><?= htmlspecialchars($r['nombre_recurso']) ?></span>
+            <span class="recurso-tipo"><?= htmlspecialchars($r['tipo_recurso']) ?></span>
+            <?php if ($visto): ?>
+                <span class="recurso-visto" title="Visto">✓</span>
+            <?php endif; ?>
+        </a>
+    <?php endif; ?>
                                 <?php endforeach; ?>
                             </div>
                         <?php else: ?>
@@ -83,10 +126,23 @@ require __DIR__ . '/partials/header.php';
     <div class="panel" style="grid-column:1/-1">
         <h2>Evaluaciones</h2>
         <?php foreach ($evaluaciones as $e): ?>
+            <?php $abierta = (int) $e['id_estado_e'] === 1; ?>
             <div class="list-item">
                 <strong><?= htmlspecialchars($e['titulo_evaluacion']) ?></strong> · <?=$e['preguntas']?> preguntas · aprobación <?=$e['puntaje_aprobacion']?>
+                <?php if ((int) $e['id_estado_e'] === 3): ?>
+                    <span class="badge cerrada" title="Evaluación cerrada">Cerrada</span>
+                <?php endif; ?>
                 <?php if ((int) $_SESSION['rol_id'] === 2): ?>
-                    <a class="btn btn-secondary" href="index.php?route=crear-pregunta&evaluacion=<?=$e['id_evaluacion']?>">Agregar pregunta</a>
+                    <?php if ($abierta): ?>
+                        <a class="btn btn-secondary" href="index.php?route=crear-pregunta&evaluacion=<?=$e['id_evaluacion']?>">Agregar pregunta</a>
+                        <form method="post" action="index.php?route=cerrar-evaluacion" style="display:inline">
+                            <input type="hidden" name="evaluacion" value="<?=$e['id_evaluacion']?>">
+                            <input type="hidden" name="curso" value="<?= $curso['id_curso'] ?>">
+                            <button type="submit" class="btn btn-secondary btn-sm" onclick="return confirm('¿Cerrar esta evaluación? No se podrán agregar más preguntas.')">Cerrar</button>
+                        </form>
+                    <?php else: ?>
+                        <span class="badge cerrada">Cerrada</span>
+                    <?php endif; ?>
                 <?php else: ?>
                     <a class="btn btn-primary" href="index.php?route=evaluacion&id=<?=$e['id_evaluacion']?>">Presentar</a>
                 <?php endif; ?>
@@ -97,5 +153,172 @@ require __DIR__ . '/partials/header.php';
         <?php endif; ?>
     </div>
 </div>
+
+<div id="video-modal" class="vm-modal" style="display:none;">
+    <div class="vm-modal-content">
+        <div class="vm-modal-header">
+            <h3 id="vm-titulo"></h3>
+            <span id="vm-duracion" class="duracion-total"></span>
+            <button type="button" class="vm-close" id="vm-close" aria-label="Cerrar">&times;</button>
+        </div>
+        <div class="vm-modal-body">
+            <video id="vm-player" class="vm-video" controls preload="metadata" controlsList="nodownload">
+                <source id="vm-source" src="" type="video/mp4">
+                Tu navegador no soporta la etiqueta de video.
+            </video>
+        </div>
+    </div>
+    <div class="vm-overlay"></div>
+</div>
+
+<script>
+(function() {
+    var modal = document.getElementById('video-modal');
+    var player = document.getElementById('vm-player');
+    var source = document.getElementById('vm-source');
+    var titulo = document.getElementById('vm-titulo');
+    var duracion = document.getElementById('vm-duracion');
+    var cursoId = <?= (int) $curso['id_curso'] ?>;
+    var vistoIds = <?= json_encode(array_values($recursosVistos ?? [])) ?>;
+    var totalRecursos = <?= $totalRecursos ?? 0 ?>;
+    var markadoRecurso = null;
+
+    function abrirModal(ruta, nombre, seg, recursoId) {
+        source.src = ruta;
+        player.load();
+        titulo.textContent = nombre;
+        if (seg && parseInt(seg) > 0) {
+            var h = Math.floor(seg / 3600);
+            var m = Math.floor((seg % 3600) / 60);
+            var s = seg % 60;
+            var txt = h > 0 ? h + 'h ' + m + 'm ' + s + 's' : (m > 0 ? m + 'm ' + s + 's' : s + 's');
+            duracion.textContent = '⏱ ' + txt;
+            duracion.style.display = 'inline-block';
+        } else {
+            duracion.style.display = 'none';
+        }
+        markadoRecurso = recursoId ? parseInt(recursoId) : null;
+        modal.style.display = 'flex';
+        document.body.style.overflow = 'hidden';
+        player.focus();
+        var playPromise = player.play();
+        if (playPromise !== undefined && playPromise.catch) {
+            playPromise.catch(function() {});
+        }
+    }
+
+    function cerrarModal() {
+        player.pause();
+        source.src = '';
+        player.load();
+        modal.style.display = 'none';
+        document.body.style.overflow = '';
+    }
+
+    function marcarComoVisto() {
+        if (!markadoRecurso || vistoIds.indexOf(markadoRecurso) !== -1) {
+            return;
+        }
+        var xhr = new XMLHttpRequest();
+        xhr.open('GET', 'index.php?route=marcar-video-visto&recurso=' + markadoRecurso + '&curso=' + cursoId, true);
+        xhr.onreadystatechange = function() {
+            if (xhr.readyState === 4 && xhr.status === 200) {
+                vistoIds.push(markadoRecurso);
+                var btn = document.querySelector('.video-open[data-recurso="' + markadoRecurso + '"]');
+                if (btn) {
+                    var header = btn.closest('.video-header');
+                    if (header && !header.querySelector('.recurso-visto')) {
+                        var span = document.createElement('span');
+                        span.className = 'recurso-visto';
+                        span.title = 'Completado';
+                        span.textContent = '✓';
+                        header.insertBefore(span, btn);
+                    }
+                }
+                var link = document.querySelector('.recurso-link[data-recurso="' + markadoRecurso + '"]');
+                if (link && !link.querySelector('.recurso-visto')) {
+                    var span = document.createElement('span');
+                    span.className = 'recurso-visto';
+                    span.title = 'Visto';
+                    span.textContent = '✓';
+                    link.appendChild(span);
+                }
+                var progressBar = document.querySelector('.progress-fill');
+                var progresoText = document.querySelector('.progreso-text');
+                if (progressBar && totalRecursos > 0) {
+                    var nuevo = Math.round((vistoIds.length / totalRecursos) * 100);
+                    progressBar.style.width = nuevo + '%';
+                    if (progresoText) {
+                        progresoText.textContent = nuevo + '% completado';
+                    }
+                }
+            }
+        };
+        xhr.send();
+    }
+
+    function marcarLinkVisto(link) {
+        var recursoId = parseInt(link.getAttribute('data-recurso'));
+        if (!recursoId || vistoIds.indexOf(recursoId) !== -1) {
+            return;
+        }
+        var xhr = new XMLHttpRequest();
+        xhr.open('GET', 'index.php?route=marcar-video-visto&recurso=' + recursoId + '&curso=' + cursoId, true);
+        xhr.onreadystatechange = function() {
+            if (xhr.readyState === 4 && xhr.status === 200) {
+                vistoIds.push(recursoId);
+                if (!link.querySelector('.recurso-visto')) {
+                    var span = document.createElement('span');
+                    span.className = 'recurso-visto';
+                    span.title = 'Visto';
+                    span.textContent = '✓';
+                    link.appendChild(span);
+                }
+                var progressBar = document.querySelector('.progress-fill');
+                var progresoText = document.querySelector('.progreso-text');
+                if (progressBar && totalRecursos > 0) {
+                    var nuevo = Math.round((vistoIds.length / totalRecursos) * 100);
+                    progressBar.style.width = nuevo + '%';
+                    if (progresoText) {
+                        progresoText.textContent = nuevo + '% completado';
+                    }
+                }
+            }
+        };
+        xhr.send();
+    }
+
+    document.addEventListener('click', function(e) {
+        var btn = e.target.closest('.video-open');
+        if (btn) {
+            e.preventDefault();
+            abrirModal(
+                btn.getAttribute('data-ruta'),
+                btn.getAttribute('data-nombre'),
+                btn.getAttribute('data-duracion'),
+                btn.getAttribute('data-recurso')
+            );
+        }
+
+        var link = e.target.closest('.recurso-link');
+        if (link) {
+            setTimeout(function() {
+                marcarLinkVisto(link);
+            }, 100);
+        }
+    });
+
+    player.addEventListener('ended', marcarComoVisto);
+
+    document.getElementById('vm-close').addEventListener('click', cerrarModal);
+    document.querySelector('.vm-overlay').addEventListener('click', cerrarModal);
+
+    document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape') {
+            cerrarModal();
+        }
+    });
+})();
+</script>
 
 <?php require __DIR__ . '/partials/footer.php'; ?>

@@ -42,6 +42,7 @@ $rutas = [
     'instructor-aprendices' => ['CursoController', 'aprendices'],
     'agregar-aprendices' => ['CursoController', 'agregarAprendices'],
     'cambiar-estado-curso' => ['CursoController', 'estado'],
+    'marcar-video-visto' => ['CursoController', 'marcarVisto'],
 
     'evaluaciones-instructor' => ['EvaluacionController', 'instructor'],
     'crear-evaluacion' => ['EvaluacionController', 'crear'],
@@ -49,10 +50,13 @@ $rutas = [
     'evaluaciones-aprendiz' => ['EvaluacionController', 'aprendiz'],
     'evaluacion' => ['EvaluacionController', 'ver'],
     'responder-evaluacion' => ['EvaluacionController', 'responder'],
+    'cerrar-evaluacion' => ['EvaluacionController', 'cerrar'],
 
     'progreso' => ['AprendizController', 'progreso'],
     'mis-cursos' => ['AprendizController', 'cursos'],
     'certificados' => ['AprendizController', 'certificados'],
+    'certificado' => ['AprendizController', 'verCertificado'],
+    'descargar-certificado' => ['AprendizController', 'descargarCertificado'],
 
     'reportes' => ['ReportController', 'admin'],
     'reportes-instructor' => ['ReportController', 'instructor'],

@@ -2,6 +2,7 @@
 
 require_once __DIR__ . '/../models/Evaluacion.php';
 require_once __DIR__ . '/../models/Curso.php';
+require_once __DIR__ . '/../models/Certificado.php';
 
 class EvaluacionController
 {
@@ -49,6 +50,11 @@ class EvaluacionController
         $modelo = new Evaluacion();
         $evaluacionId = (int) $_GET['evaluacion'];
         $curso = $modelo->cursoDe($evaluacionId);
+
+        if (!$modelo->estaAbierta($evaluacionId)) {
+            header('Location: index.php?route=curso&id=' . $curso);
+            exit;
+        }
 
         if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $respuestas = [];
@@ -120,6 +126,9 @@ class EvaluacionController
             $nota >= (float) $evaluacion['puntaje_aprobacion']
         );
 
+        $certificadoModelo = new Certificado();
+        $certificadoModelo->crear((int) $evaluacion['id_curso_e'], (int) $_SESSION['usuario']);
+
         header('Location: index.php?route=evaluacion&id=' . $id);
         exit;
     }
@@ -146,5 +155,31 @@ class EvaluacionController
         }
 
         require __DIR__ . '/../views/instructor/evaluaciones.php';
+    }
+
+    public function cerrar(): void
+    {
+        $this->permitirSoloInstructor();
+
+        $id = (int) $_POST['evaluacion'] ?? 0;
+        $cursoId = (int) $_POST['curso'] ?? 0;
+
+        if ($id <= 0 || $cursoId <= 0) {
+            http_response_code(400);
+            exit('Parámetros inválidos');
+        }
+
+        $modelo = new Evaluacion();
+        $eval = $modelo->uno($id);
+
+        if (!$eval || (int) $eval['id_curso_e'] !== $cursoId) {
+            http_response_code(403);
+            exit('No autorizado');
+        }
+
+        $modelo->cerrar($id);
+
+        header('Location: index.php?route=curso&id=' . $cursoId);
+        exit;
     }
 }
