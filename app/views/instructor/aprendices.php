@@ -63,7 +63,7 @@ require __DIR__ . '/../partials/header.php';
                         </div>
                     <?php endif; ?>
                 </div>
-                <div class="modal-footer" style="display:flex; justify-content:flex-end; gap:10px; margin-top:15px; padding-top:15px; border-top:1px solid var(--border);">
+                <div class="modal-footer" style="display:flex; justify-content:flex-end; gap:10px; margin-top:15px; padding-top:15px; border-top:1px solid #e1e9f1;">
                     <button type="button" class="btn btn-secondary" onclick="cerrarModalAgregar()">Cancelar</button>
                     <button type="submit" class="btn btn-primary" <?= !$disponibles ? 'disabled' : '' ?>>Agregar seleccionados</button>
                 </div>
