@@ -21,12 +21,12 @@
         <form method="post" action="index.php?route=login">
             <div class="field">
                 <label>Usuario <span class="req">*</span></label>
-                <input name="usuario" required autocomplete="username">
+                <input name="usuario" autocomplete="username">
             </div>
             <br>
             <div class="field">
                 <label>Contraseña <span class="req">*</span></label>
-                <input type="password" name="password" required autocomplete="current-password">
+                <input type="password" name="password" autocomplete="current-password">
             </div>
             <br>
             <button class="btn btn-primary" style="width:100%" type="submit">Ingresar</button>

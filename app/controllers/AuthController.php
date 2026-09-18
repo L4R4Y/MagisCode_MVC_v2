@@ -18,8 +18,15 @@ class AuthController
         $username = trim($_POST['usuario'] ?? '');
         $password = $_POST['password'] ?? '';
 
-        if ($username === '' || $password === '') {
+        if ($username === '' && $password === '') {
             $error = 'Debes ingresar usuario y contraseña.';
+        } elseif ($username === '') {
+            $error = 'El campo usuario es obligatorio.';
+        } elseif ($password === '') {
+            $error = 'El campo contraseña es obligatorio.';
+        }
+
+        if (!empty($error)) {
             require __DIR__ . '/../views/auth/login.php';
             return;
         }
