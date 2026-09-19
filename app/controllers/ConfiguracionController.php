@@ -25,7 +25,15 @@ class ConfiguracionController
         $error = '';
         $ok = '';
 
-        if (!$u || (!password_verify($actual, $u['hash_contrasena']) && $actual !== $u['hash_contrasena'])) {
+        if ($actual === '' && $nueva === '' && $conf === '') {
+            $error = 'Ingresa la contraseña actual, la nueva y su confirmación.';
+        } elseif ($actual === '') {
+            $error = 'El campo contraseña actual es obligatorio.';
+        } elseif ($nueva === '') {
+            $error = 'El campo nueva contraseña es obligatorio.';
+        } elseif ($conf === '') {
+            $error = 'El campo confirmar contraseña es obligatorio.';
+        } elseif (!$u || (!password_verify($actual, $u['hash_contrasena']) && $actual !== $u['hash_contrasena'])) {
             $error = 'La contraseña actual no es correcta.';
         } elseif (strlen($nueva) < 6) {
             $error = 'La nueva contraseña debe tener al menos 6 caracteres.';
@@ -63,16 +71,21 @@ class ConfiguracionController
             $correo = trim($_POST['correo'] ?? '');
             $celular = trim($_POST['celular'] ?? '');
 
-            $nombreValido = preg_match('/^[\p{L}\s]{2,300}$/u', $nombre);
-            $apellidoValido = preg_match('/^[\p{L}\s]{2,300}$/u', $apellido);
-            $correoValido = filter_var($correo, FILTER_VALIDATE_EMAIL);
-            $celularValido = $celular === '' || preg_match('/^[0-9]{7,15}$/', $celular);
-
-            if (!$nombreValido || !$apellidoValido) {
-                $error = 'El campo marcado con (*) "Nombre" y "Apellido" solo admite letras y debe tener al menos 2 caracteres.';
-            } elseif (!$correoValido) {
+            if ($nombre === '' && $apellido === '' && $correo === '') {
+                $error = 'Ingresa nombre, apellido y correo.';
+            } elseif ($nombre === '') {
+                $error = 'El campo nombre es obligatorio.';
+            } elseif ($apellido === '') {
+                $error = 'El campo apellido es obligatorio.';
+            } elseif ($correo === '') {
+                $error = 'El campo correo es obligatorio.';
+            } elseif (!preg_match('/^[\p{L}\s]{2,300}$/u', $nombre)) {
+                $error = 'El nombre solo admite letras y debe tener al menos 2 caracteres.';
+            } elseif (!preg_match('/^[\p{L}\s]{2,300}$/u', $apellido)) {
+                $error = 'El apellido solo admite letras y debe tener al menos 2 caracteres.';
+            } elseif (!filter_var($correo, FILTER_VALIDATE_EMAIL)) {
                 $error = 'Ingresa un correo electrónico válido.';
-            } elseif (!$celularValido) {
+            } elseif ($celular !== '' && !preg_match('/^[0-9]{7,15}$/', $celular)) {
                 $error = 'El celular debe contener solo números (7 a 15 dígitos).';
             } else {
                 try {

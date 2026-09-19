@@ -18,15 +18,15 @@ $usuario = $usuario ?? [];
         <form method="post" action="index.php?route=cambiar-password">
             <div class="field">
                 <label>Contraseña actual <span class="req">*</span></label>
-                <input type="password" name="actual" required>
+                <input type="password" name="actual">
             </div>
             <div class="field">
                 <label>Nueva contraseña <span class="req">*</span></label>
-                <input type="password" name="nueva" required>
+                <input type="password" name="nueva">
             </div>
             <div class="field">
                 <label>Confirmar contraseña <span class="req">*</span></label>
-                <input type="password" name="confirmar" required>
+                <input type="password" name="confirmar">
             </div>
             <br>
             <button class="btn btn-primary">Actualizar contraseña</button>
@@ -43,15 +43,15 @@ $usuario = $usuario ?? [];
             <form method="post" action="index.php?route=actualizar-perfil" class="form-grid">
                 <div class="field">
                     <label>Nombre <span class="req">*</span></label>
-                    <input name="nombre" value="<?= htmlspecialchars($usuario['nombre'] ?? '') ?>" required>
+                     <input name="nombre" value="<?= htmlspecialchars($usuario['nombre'] ?? '') ?>">
                 </div>
                 <div class="field">
                     <label>Apellido <span class="req">*</span></label>
-                    <input name="apellido" value="<?= htmlspecialchars($usuario['apellido'] ?? '') ?>" required>
+                     <input name="apellido" value="<?= htmlspecialchars($usuario['apellido'] ?? '') ?>">
                 </div>
                 <div class="field">
                     <label>Correo <span class="req">*</span></label>
-                    <input type="email" name="correo" value="<?= htmlspecialchars($usuario['correo'] ?? '') ?>" required>
+                     <input type="email" name="correo" value="<?= htmlspecialchars($usuario['correo'] ?? '') ?>">
                 </div>
                 <div class="field">
                     <label>Celular</label>

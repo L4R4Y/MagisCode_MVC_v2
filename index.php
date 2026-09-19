@@ -4,8 +4,15 @@ session_start();
 
 require_once __DIR__ . '/config/database.php';
 require_once __DIR__ . '/app/controllers/AuthController.php';
+require_once __DIR__ . '/app/models/Curso.php';
+require_once __DIR__ . '/app/api/CursoApi.php';
 
 $route = $_GET['route'] ?? '';
+
+if ($route === 'api/cursos') {
+    (new CursoApi())->listar();
+    exit;
+}
 
 if ($route === 'login') {
     (new AuthController())->login();
@@ -63,6 +70,7 @@ $rutas = [
     'configuracion' => ['ConfiguracionController', 'index'],
     'cambiar-password' => ['ConfiguracionController', 'password'],
     'actualizar-perfil' => ['ConfiguracionController', 'actualizarPerfil'],
+
 ];
 
 if ($route === '') {
