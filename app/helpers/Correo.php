@@ -1,5 +1,11 @@
 <?php
 
+require_once __DIR__ . '/../../vendor/autoload.php';
+require_once __DIR__ . '/../../config/mail.local.php';
+
+use PHPMailer\PHPMailer\PHPMailer;
+use PHPMailer\PHPMailer\Exception;
+
 /**
  * Envío de notificaciones por correo electrónico.
  *
@@ -60,37 +66,50 @@ class Correo
         );
     }
 
-    /**
-     * MODO PRUEBA: mientras esta constante sea true, los correos no se
-     * envían de verdad; se guardan en un archivo de texto para poder
-     * revisarlos. Ponla en false cuando ya tengas un SMTP configurado.
-     */
-    private const MODO_PRUEBA = true;
+    
+    private static function enviar(
+    string $destinatario,
+    string $asunto,
+    string $cuerpo
+): bool {
+    $mail = new PHPMailer(true);
 
-    private static function enviar(string $destinatario, string $asunto, string $cuerpo): bool
-    {
-        $remitenteNombre = defined('MAIL_FROM_NAME') ? MAIL_FROM_NAME : 'MagisCode';
-        $remitenteCorreo = defined('MAIL_FROM') ? MAIL_FROM : 'no-responder@magiscode.com';
+    try {
+        // Configurar SMTP
+        $mail->isSMTP();
+        $mail->Host = SMTP_HOST;
+        $mail->SMTPAuth = true;
+        $mail->Username = SMTP_USERNAME;
+        $mail->Password = SMTP_PASSWORD;
 
-        if (self::MODO_PRUEBA) {
-            $registro = "===== " . date('Y-m-d H:i:s') . " =====\n"
-                . "Para: {$destinatario}\n"
-                . "De: {$remitenteNombre} <{$remitenteCorreo}>\n"
-                . "Asunto: {$asunto}\n\n"
-                . "{$cuerpo}\n\n";
+        // Seguridad y puerto
+        $mail->SMTPSecure = PHPMailer::ENCRYPTION_STARTTLS;
+        $mail->Port = SMTP_PORT;
 
-            return (bool) file_put_contents(
-                __DIR__ . '/../../correo_debug.log',
-                $registro,
-                LOCK_EX
-            );
-        }
+        // Codificación
+        $mail->CharSet = 'UTF-8';
 
-        $asuntoCodificado = '=?UTF-8?B?' . base64_encode($asunto) . '?=';
+        // Remitente
+        $mail->setFrom(
+            MAIL_FROM,
+            MAIL_FROM_NAME
+        );
 
-        $cabeceras = "From: {$remitenteNombre} <{$remitenteCorreo}>\r\n"
-            . "Content-Type: text/plain; charset=UTF-8\r\n";
+        // Destinatario
+        $mail->addAddress($destinatario);
 
-        return @mail($destinatario, $asuntoCodificado, $cuerpo, $cabeceras);
+        // Contenido
+        $mail->isHTML(false);
+        $mail->Subject = $asunto;
+        $mail->Body = $cuerpo;
+
+        // Enviar
+        $mail->send();
+
+        return true;
+
+    } catch (Exception $e) {
+        return false;
     }
+}
 }

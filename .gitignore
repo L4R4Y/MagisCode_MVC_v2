@@ -1,2 +1,4 @@
 .kilo/
 correo_debug.log
+/config/mail.local.php
+/vendor/

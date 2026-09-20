@@ -138,7 +138,9 @@ class AdminController
                         'tipo_documento' => $d['tipo_documento'],
                     ]);
 
-                    Correo::registrarCredencialesDebug(
+                    Correo::enviarCuentaCreada(
+                        $d['correo'],
+                        $d['nombre'] . ' ' . $d['apellido'],
                         $usernameGenerado,
                         $passwordGenerado
                     );
@@ -292,10 +294,16 @@ class AdminController
                                 'password' => $passwordTemp,
                                 'rol' => $rolId,
                                 'tipo_documento' => $tipoDocId,
-                            ]);
+                        ]);
 
-                            Correo::registrarCredencialesDebug($correo, $nombre . ' ' . $apellido, $username, $passwordTemp, $rolId);
-                            $resultado['creados']++;
+                        Correo::enviarCuentaCreada(
+                            $correo,
+                            $nombre . ' ' . $apellido,
+                            $username,
+                            $passwordTemp
+                        );
+
+                        $resultado['creados']++;
                         } catch (Throwable $e) {
                             $resultado['errores'][] = "Fila {$resultado['total']}: " . $e->getMessage();
                         }
