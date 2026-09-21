@@ -299,6 +299,32 @@ class CursoController
         exit;
     }
 
+    public function progresoAjax(): void
+    {
+        $this->permitirRoles(3);
+
+        $cursoId = (int) ($_GET['curso'] ?? 0);
+
+        if ($cursoId <= 0) {
+            http_response_code(400);
+            exit('Parámetros inválidos');
+        }
+
+        $modelo = new Curso();
+        $recursosVistos = $modelo->recursosVistosCurso($cursoId, (int) $_SESSION['usuario']);
+
+        $avance = $modelo->calcularAvance($cursoId, (int) $_SESSION['usuario']);
+        $progresoVideos = $modelo->progresoVideos($cursoId, (int) $_SESSION['usuario']);
+
+        header('Content-Type: application/json');
+        echo json_encode([
+            'avance' => $avance,
+            'progreso_videos' => $progresoVideos,
+            'visto_ids' => $recursosVistos,
+        ]);
+        exit;
+    }
+
     public function agregarAprendices(): void
     {
         $this->permitirRoles(2);

@@ -148,9 +148,9 @@ require __DIR__ . '/partials/header.php';
                     <?php endif; ?>
                 <?php else: ?>
                     <?php if ($progresoVideos >= 90): ?>
-                        <a class="btn btn-primary" href="index.php?route=evaluacion&id=<?=$e['id_evaluacion']?>">Presentar</a>
+                        <a class="btn btn-primary btn-presentar" href="index.php?route=evaluacion&id=<?=$e['id_evaluacion']?>" data-evaluacion="<?=$e['id_evaluacion']?>">Presentar</a>
                     <?php else: ?>
-                        <span class="badge" style="background:#f1c40f;color:#10213b">Requiere 90% de videos</span>
+                        <span class="btn btn-secondary btn-presentar-disabled" data-evaluacion="<?=$e['id_evaluacion']?>" style="cursor:default">Requiere 90% de videos</span>
                     <?php endif; ?>
                 <?php endif; ?>
             </div>
@@ -229,6 +229,56 @@ require __DIR__ . '/partials/header.php';
         document.body.style.overflow = '';
     }
 
+    function actualizarProgreso() {
+        var xhr = new XMLHttpRequest();
+        xhr.open('GET', 'index.php?route=progreso-video&curso=' + cursoId, true);
+        xhr.onreadystatechange = function() {
+            if (xhr.readyState === 4 && xhr.status === 200) {
+                var data = JSON.parse(xhr.responseText);
+                vistoIds = data.visto_ids || [];
+
+                var progressBar = document.querySelector('.progress-fill');
+                var progresoText = document.querySelector('.progreso-text');
+                if (progressBar) {
+                    progressBar.style.width = data.avance + '%';
+                }
+                if (progresoText) {
+                     progresoText.textContent = data.avance + '% completado · '
+                        + data.progreso_videos + '% videos / 10% evaluaciones';
+                }
+
+                var podePresentar = data.progreso_videos >= 90;
+                var btns = document.querySelectorAll('.btn-presentar, .btn-presentar-disabled');
+                btns.forEach(function(el) {
+                    var id = el.getAttribute('data-evaluacion');
+                    var container = el.closest('.list-item');
+                    if (!container) return;
+
+                    if (podePresentar) {
+                        if (!document.querySelector('.btn-presentar[data-evaluacion="' + id + '"]')) {
+                            var a = document.createElement('a');
+                            a.className = 'btn btn-primary btn-presentar';
+                            a.href = 'index.php?route=evaluacion&id=' + id;
+                            a.setAttribute('data-evaluacion', id);
+                            a.textContent = 'Presentar';
+                            el.parentNode.replaceChild(a, el);
+                        }
+                    } else {
+                        if (!document.querySelector('.btn-presentar-disabled[data-evaluacion="' + id + '"]')) {
+                            var span = document.createElement('span');
+                            span.className = 'btn btn-secondary btn-presentar-disabled';
+                            span.setAttribute('data-evaluacion', id);
+                            span.style.cursor = 'default';
+                            span.textContent = 'Requiere 90% de videos';
+                            el.parentNode.replaceChild(span, el);
+                        }
+                    }
+                });
+            }
+        };
+        xhr.send();
+    }
+
     function marcarComoVisto() {
         if (!markadoRecurso || vistoIds.indexOf(markadoRecurso) !== -1) {
             return;
@@ -257,15 +307,7 @@ require __DIR__ . '/partials/header.php';
                     span.textContent = '✓';
                     link.appendChild(span);
                 }
-                var progressBar = document.querySelector('.progress-fill');
-                var progresoText = document.querySelector('.progreso-text');
-                if (progressBar && totalRecursos > 0) {
-                    var nuevo = Math.round((vistoIds.length / totalRecursos) * 100);
-                    progressBar.style.width = nuevo + '%';
-                    if (progresoText) {
-                        progresoText.textContent = nuevo + '% completado';
-                    }
-                }
+                actualizarProgreso();
             }
         };
         xhr.send();
@@ -288,15 +330,7 @@ require __DIR__ . '/partials/header.php';
                     span.textContent = '✓';
                     link.appendChild(span);
                 }
-                var progressBar = document.querySelector('.progress-fill');
-                var progresoText = document.querySelector('.progreso-text');
-                if (progressBar && totalRecursos > 0) {
-                    var nuevo = Math.round((vistoIds.length / totalRecursos) * 100);
-                    progressBar.style.width = nuevo + '%';
-                    if (progresoText) {
-                        progresoText.textContent = nuevo + '% completado';
-                    }
-                }
+                actualizarProgreso();
             }
         };
         xhr.send();
@@ -332,6 +366,8 @@ require __DIR__ . '/partials/header.php';
             cerrarModal();
         }
     });
+
+    setInterval(actualizarProgreso, 30000);
 })();
 </script>
 
