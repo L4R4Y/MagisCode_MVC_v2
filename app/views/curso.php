@@ -130,6 +130,7 @@ require __DIR__ . '/partials/header.php';
         <h2>Evaluaciones</h2>
         <?php foreach ($evaluaciones as $e): ?>
             <?php $abierta = (int) $e['id_estado_e'] === 1; ?>
+            <?php $realizada = (int) $_SESSION['rol_id'] === 3 && $e['calificacion'] !== null; ?>
             <div class="list-item">
                 <strong><?= htmlspecialchars($e['titulo_evaluacion']) ?></strong> · <?=$e['preguntas']?> preguntas · aprobación <?=$e['puntaje_aprobacion']?>
                 <?php if ((int) $e['id_estado_e'] === 3): ?>
@@ -147,7 +148,9 @@ require __DIR__ . '/partials/header.php';
                         <span class="badge cerrada">Cerrada</span>
                     <?php endif; ?>
                 <?php else: ?>
-                    <?php if ($progresoVideos >= 90): ?>
+                    <?php if ($realizada): ?>
+                        <a class="btn btn-primary btn-ver-nota" href="index.php?route=evaluacion&id=<?=$e['id_evaluacion']?>" data-evaluacion="<?=$e['id_evaluacion']?>">Ver nota</a>
+                    <?php elseif ($progresoVideos >= 90): ?>
                         <a class="btn btn-primary btn-presentar" href="index.php?route=evaluacion&id=<?=$e['id_evaluacion']?>" data-evaluacion="<?=$e['id_evaluacion']?>">Presentar</a>
                     <?php else: ?>
                         <span class="btn btn-secondary btn-presentar-disabled" data-evaluacion="<?=$e['id_evaluacion']?>" style="cursor:default">Requiere 90% de videos</span>

@@ -39,17 +39,32 @@ class Evaluacion extends Model
         return (int) $stmt->fetchColumn();
     }
 
-    public function porCurso(int $cursoId): array
+    public function porCurso(int $cursoId, ?int $usuarioId = null): array
     {
-        $sql = 'SELECT e.*, ee.estado,
+        $resultado = '';
+        $parametros = [];
+
+        if ($usuarioId !== null) {
+            $resultado = ",
+                       (SELECT MAX(re.calificacion) FROM resultado_evaluacion re
+                          WHERE re.id_evaluacion_r = e.id_evaluacion AND re.id_usuario_r = ?) calificacion,
+                       (SELECT MAX(re.aprobado) FROM resultado_evaluacion re
+                          WHERE re.id_evaluacion_r = e.id_evaluacion AND re.id_usuario_r = ?) aprobado";
+            array_push($parametros, $usuarioId, $usuarioId);
+        }
+
+        $sql = "SELECT e.*, ee.estado,
                        (SELECT COUNT(*) FROM pregunta p WHERE p.id_evaluacion_p = e.id_evaluacion) preguntas
+                       $resultado
                 FROM evaluacion e
                 JOIN estado_evaluacion ee ON ee.id_estado = e.id_estado_e
                 WHERE e.id_curso_e = ?
-                ORDER BY e.id_evaluacion';
+                ORDER BY e.id_evaluacion";
+
+        $parametros[] = $cursoId;
 
         $stmt = $this->db->prepare($sql);
-        $stmt->execute([$cursoId]);
+        $stmt->execute($parametros);
 
         return $stmt->fetchAll();
     }

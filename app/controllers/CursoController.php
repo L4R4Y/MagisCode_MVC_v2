@@ -119,7 +119,11 @@ class CursoController
         }
 
         $modulos = (new Contenido())->modulos($id);
-        $evaluaciones = (new Evaluacion())->porCurso($id);
+        $modeloEvaluacion = new Evaluacion();
+        $evaluaciones = $modeloEvaluacion->porCurso(
+            $id,
+            $rol === 3 ? (int) $_SESSION['usuario'] : null
+        );
 
         $totalRecursos = 0;
         $totalVideos = 0;

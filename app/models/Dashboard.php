@@ -51,13 +51,15 @@ class Dashboard extends Model
     {
         $cursoModelo = new Curso();
 
-        $stmt = $this->db->prepare('SELECT id_curso_c_a FROM curso_aprendiz WHERE id_usuario_c_a = ?');
-        $stmt->execute([$aprendizId]);
-        $cursos = (int) $stmt->fetchColumn();
-
-        $stmt = $this->db->prepare('SELECT id_curso_c_a, avance FROM curso_aprendiz WHERE id_usuario_c_a = ?');
+        $stmt = $this->db->prepare(
+            'SELECT ca.id_curso_c_a, ca.avance
+             FROM curso_aprendiz ca
+             WHERE ca.id_usuario_c_a = ?
+               AND ca.estado_c_a <> \'Inactivo\''
+        );
         $stmt->execute([$aprendizId]);
         $asignaciones = $stmt->fetchAll();
+        $cursos = count($asignaciones);
 
         $sumaAvance = 0;
         $totalCursos = 0;

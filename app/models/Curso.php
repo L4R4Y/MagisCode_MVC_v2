@@ -111,6 +111,7 @@ class Curso extends Model
                 JOIN curso c ON c.id_curso = ca.id_curso_c_a
                 JOIN usuario u ON u.id_usuario = c.id_usuario_c
                 WHERE ca.id_usuario_c_a = ?
+                  AND ca.estado_c_a <> 'Inactivo'
                 ORDER BY ca.id_asignacion DESC";
 
         $stmt = $this->db->prepare($sql);
