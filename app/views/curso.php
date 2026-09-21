@@ -3,7 +3,8 @@ $pageTitle = $curso['titulo_curso'];
 $pageSubtitle = $curso['descripcion_curso'];
 require __DIR__ . '/partials/header.php';
 ?>
-<div class="toolbar">
+<div class="course-content">
+    <div class="toolbar">
     <div>
         <h2>Contenido del curso</h2>
         <p>Instructor: <?= htmlspecialchars($curso['instructor']) ?></p>
@@ -168,6 +169,7 @@ require __DIR__ . '/partials/header.php';
             <?php endif; ?>
         <?php endif; ?>
     </div>
+</div>
 </div>
 
 <div id="video-modal" class="vm-modal" style="display:none;">
