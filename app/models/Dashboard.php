@@ -1,6 +1,7 @@
 <?php
 
 require_once __DIR__ . '/Model.php';
+require_once __DIR__ . '/Curso.php';
 
 class Dashboard extends Model
 {
@@ -48,13 +49,25 @@ class Dashboard extends Model
 
     public function aprendiz(int $aprendizId): array
     {
-        $stmt = $this->db->prepare('SELECT COUNT(*) FROM curso_aprendiz WHERE id_usuario_c_a = ?');
+        $cursoModelo = new Curso();
+
+        $stmt = $this->db->prepare('SELECT id_curso_c_a FROM curso_aprendiz WHERE id_usuario_c_a = ?');
         $stmt->execute([$aprendizId]);
         $cursos = (int) $stmt->fetchColumn();
 
-        $stmt = $this->db->prepare('SELECT COALESCE(AVG(avance), 0) FROM curso_aprendiz WHERE id_usuario_c_a = ?');
+        $stmt = $this->db->prepare('SELECT id_curso_c_a, avance FROM curso_aprendiz WHERE id_usuario_c_a = ?');
         $stmt->execute([$aprendizId]);
-        $progreso = round((float) $stmt->fetchColumn());
+        $asignaciones = $stmt->fetchAll();
+
+        $sumaAvance = 0;
+        $totalCursos = 0;
+        foreach ($asignaciones as $asignacion) {
+            $cursoId = (int) $asignacion['id_curso_c_a'];
+            $sumaAvance += $cursoModelo->calcularAvance($cursoId, $aprendizId);
+            $totalCursos++;
+        }
+
+        $progreso = $totalCursos > 0 ? round($sumaAvance / $totalCursos) : 0;
 
         $stmt = $this->db->prepare('SELECT COUNT(*) FROM resultado_evaluacion WHERE id_usuario_r = ?');
         $stmt->execute([$aprendizId]);

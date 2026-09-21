@@ -57,6 +57,8 @@ class EvaluacionController
         }
 
         if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+            $tipo = trim($_POST['tipo'] ?? '');
+            $pregunta = trim($_POST['pregunta'] ?? '');
             $respuestas = [];
 
             foreach (($_POST['respuesta'] ?? []) as $indice => $texto) {
@@ -68,9 +70,23 @@ class EvaluacionController
                 }
             }
 
+            $error = '';
+            if ($tipo === '' || ($tipo !== 'Seleccion Multiple' && $tipo !== 'Verdadero/Falso' && $tipo !== 'Boolean')) {
+                $error = 'Selecciona un tipo de pregunta válido.';
+            } elseif ($pregunta === '') {
+                $error = 'El campo pregunta es obligatorio.';
+            } elseif (count($respuestas) < 2) {
+                $error = 'Debes definir al menos dos respuestas.';
+            }
+
+            if ($error !== '') {
+                require __DIR__ . '/../views/instructor/crear_pregunta.php';
+                return;
+            }
+
             $modelo->crearPregunta([
-                'tipo' => trim($_POST['tipo']),
-                'pregunta' => trim($_POST['pregunta']),
+                'tipo' => $tipo,
+                'pregunta' => $pregunta,
                 'evaluacion' => $evaluacionId,
                 'respuestas' => $respuestas,
             ]);

@@ -16,8 +16,11 @@ require __DIR__ . '/partials/header.php';
             <div class="progreso-cursos">
                 <div class="progress-bar">
                     <div class="progress-fill" style="width:<?= $miAvance ?>%"></div>
+                    <div class="progress-fill-videos" style="width:<?= $progresoVideos * 0.9 ?>%"></div>
                 </div>
-                <span class="progreso-text"><?= $miAvance ?>% completado</span>
+                <span class="progreso-text">
+                    <?= $miAvance ?>% completado · <?= $progresoVideos ?>% videos / 10% evaluaciones
+                </span>
             </div>
         <?php endif; ?>
     </div>
@@ -144,12 +147,22 @@ require __DIR__ . '/partials/header.php';
                         <span class="badge cerrada">Cerrada</span>
                     <?php endif; ?>
                 <?php else: ?>
-                    <a class="btn btn-primary" href="index.php?route=evaluacion&id=<?=$e['id_evaluacion']?>">Presentar</a>
+                    <?php if ($progresoVideos >= 90): ?>
+                        <a class="btn btn-primary" href="index.php?route=evaluacion&id=<?=$e['id_evaluacion']?>">Presentar</a>
+                    <?php else: ?>
+                        <span class="badge" style="background:#f1c40f;color:#10213b">Requiere 90% de videos</span>
+                    <?php endif; ?>
                 <?php endif; ?>
             </div>
         <?php endforeach; ?>
-        <?php if (!$evaluaciones): ?>
+        <?php if ((int) $_SESSION['rol_id'] === 3 && empty($evaluaciones)): ?>
+            <div class="empty">No hay una evaluación creada para ser evaluado y certificado.</div>
+        <?php elseif ((int) $_SESSION['rol_id'] !== 3 && !$evaluaciones): ?>
             <div class="empty">No hay evaluaciones disponibles.</div>
+        <?php elseif ((int) $_SESSION['rol_id'] === 3): ?>
+            <?php if ($progresoVideos < 90): ?>
+                <div class="empty">Debes ver el 90% de los videos antes de poder presentar las evaluaciones.</div>
+            <?php endif; ?>
         <?php endif; ?>
     </div>
 </div>
@@ -181,6 +194,7 @@ require __DIR__ . '/partials/header.php';
     var cursoId = <?= (int) $curso['id_curso'] ?>;
     var vistoIds = <?= json_encode(array_values($recursosVistos ?? [])) ?>;
     var totalRecursos = <?= $totalRecursos ?? 0 ?>;
+    var totalVideos = <?= $totalVideos ?? 0 ?>;
     var markadoRecurso = null;
 
     function abrirModal(ruta, nombre, seg, recursoId) {

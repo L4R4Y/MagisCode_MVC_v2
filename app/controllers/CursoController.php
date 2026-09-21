@@ -91,6 +91,9 @@ class CursoController
         $miAvance = $rol === 3
             ? $modelo->calcularAvance($id, (int) $_SESSION['usuario'])
             : null;
+        $progresoVideos = $rol === 3
+            ? $modelo->progresoVideos($id, (int) $_SESSION['usuario'])
+            : null;
 
         if ($rol === 2 && (int) $curso['id_usuario_c'] !== (int) $_SESSION['usuario']) {
             exit('No tienes acceso a este curso.');
@@ -119,9 +122,15 @@ class CursoController
         $evaluaciones = (new Evaluacion())->porCurso($id);
 
         $totalRecursos = 0;
+        $totalVideos = 0;
         foreach ($modulos as $modulo) {
             foreach ($modulo['lecciones'] as $leccion) {
-                $totalRecursos += count($leccion['recursos'] ?? []);
+                foreach ($leccion['recursos'] ?? [] as $recurso) {
+                    $totalRecursos++;
+                    if ($recurso['tipo_recurso'] === 'MP4') {
+                        $totalVideos++;
+                    }
+                }
             }
         }
 

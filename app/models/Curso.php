@@ -116,7 +116,14 @@ class Curso extends Model
         $stmt = $this->db->prepare($sql);
         $stmt->execute([$aprendizId]);
 
-        return $stmt->fetchAll();
+        $resultado = $stmt->fetchAll();
+
+        foreach ($resultado as &$fila) {
+            $fila['avance'] = $this->calcularAvance((int) $fila['id_curso_c_a'], $aprendizId);
+        }
+        unset($fila);
+
+        return $resultado;
     }
 
     public function aprendicesCurso(int $cursoId): array
@@ -224,9 +231,63 @@ class Curso extends Model
 
     public function calcularAvance(int $cursoId, int $usuarioId): int
     {
+        try {
+            $stmt = $this->db->prepare(
+                'SELECT COALESCE(SUM(CASE WHEN r.tipo_recurso = \'MP4\' THEN 1 ELSE 0 END), 0) total_videos
+                 FROM recurso r
+                 JOIN leccion l ON l.id_leccion = r.id_leccion_r
+                 JOIN modulo m ON m.id_modulo = l.id_modulo_l
+                 WHERE m.id_curso_m = ?'
+            );
+            $stmt->execute([$cursoId]);
+            $totalVideos = (int) $stmt->fetchColumn();
+
+            $stmt = $this->db->prepare(
+                'SELECT COALESCE(COUNT(DISTINCT rv.id_recurso), 0) videos_vistos
+                 FROM recurso_visto rv
+                 JOIN recurso r ON r.id_recurso = rv.id_recurso
+                 JOIN leccion l ON l.id_leccion = r.id_leccion_r
+                 JOIN modulo m ON m.id_modulo = l.id_modulo_l
+                 WHERE m.id_curso_m = ? AND rv.id_usuario = ?'
+            );
+            $stmt->execute([$cursoId, $usuarioId]);
+            $videosVistos = (int) $stmt->fetchColumn();
+
+            $stmt = $this->db->prepare(
+                'SELECT COUNT(*) FROM evaluacion WHERE id_curso_e = ?'
+            );
+            $stmt->execute([$cursoId]);
+            $totalEvaluaciones = (int) $stmt->fetchColumn();
+
+            $stmt = $this->db->prepare(
+                'SELECT COUNT(DISTINCT re.id_evaluacion_r)
+                 FROM resultado_evaluacion re
+                 WHERE re.id_usuario_r = ?
+                   AND re.aprobado = 1
+                   AND re.id_evaluacion_r IN (SELECT id_evaluacion FROM evaluacion WHERE id_curso_e = ?)'
+            );
+            $stmt->execute([$usuarioId, $cursoId]);
+            $evaluacionesAprobadas = (int) $stmt->fetchColumn();
+        } catch (PDOException $e) {
+            return 0;
+        }
+
+        $progresoVideos = $totalVideos > 0
+            ? (int) round(($videosVistos / $totalVideos) * 90)
+            : 0;
+
+        $progresoEvaluaciones = $totalEvaluaciones > 0
+            ? (int) round(($evaluacionesAprobadas / $totalEvaluaciones) * 10)
+            : 0;
+
+        return $progresoVideos + $progresoEvaluaciones;
+    }
+
+    public function progresoVideos(int $cursoId, int $usuarioId): int
+    {
         $sql = 'SELECT
-                    COUNT(r.id_recurso) total_recursos,
-                    COALESCE(COUNT(DISTINCT rv.id_recurso), 0) recursos_vistos
+                    COALESCE(SUM(CASE WHEN r.tipo_recurso = \'MP4\' THEN 1 ELSE 0 END), 0) total_videos,
+                    COALESCE(COUNT(DISTINCT rv.id_recurso), 0) videos_vistos
                 FROM recurso r
                 JOIN leccion l ON l.id_leccion = r.id_leccion_r
                 JOIN modulo m ON m.id_modulo = l.id_modulo_l
@@ -242,11 +303,11 @@ class Curso extends Model
             return 0;
         }
 
-        if (!$row || (int) $row['total_recursos'] === 0) {
+        if (!$row || (int) $row['total_videos'] === 0) {
             return 0;
         }
 
-        return (int) round(((int) $row['recursos_vistos'] / (int) $row['total_recursos']) * 100);
+        return (int) round(((int) $row['videos_vistos'] / (int) $row['total_videos']) * 100);
     }
 
     public function actualizarAvance(int $cursoId, int $usuarioId): bool
