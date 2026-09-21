@@ -5,8 +5,14 @@ $pageSubtitle = 'Crea cuentas, asigna roles y administra el estado de acceso.';
 require __DIR__ . '/../partials/header.php';
 ?>
 
-<?php if (isset($_GET['ok'])): ?>
-    <div class="success">Usuario creado correctamente.</div>
+<?php if (isset($_GET['ok']) && !isset($_GET['correo'])): ?>
+    <div class="success">Usuario creado correctamente y las credenciales fueron enviadas al correo.</div>
+<?php endif; ?>
+
+<?php if (isset($_GET['ok']) && isset($_GET['correo']) && $_GET['correo'] === '0'): ?>
+    <div class="success">
+        Usuario creado correctamente, pero no fue posible enviar las credenciales al correo.
+    </div>
 <?php endif; ?>
 
 <?php if (isset($_GET['editado'])): ?>

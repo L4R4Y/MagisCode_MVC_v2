@@ -51,13 +51,13 @@ Luis,Martinez,luis.mtz@gmail.com,lmtz,Administrador,CC,1000000023,Activo"); ?></
 <?php if ($resultado !== null): ?>
     <div class="panel">
         <h2>Resultado de la importación</h2>
-
+            
         <div class="form-note">
-            Total de filas procesadas: <strong><?= count($resultado['errores']) + $resultado['creados'] ?></strong>
+           Total de filas procesadas: <strong><?= $resultado['total'] ?></strong>
             &middot; Creados: <strong><?= $resultado['creados'] ?></strong>
             &middot; Errores: <strong><?= count($resultado['errores']) ?></strong>
         </div>
-
+        
         <?php if (!empty($resultado['errores'])): ?>
             <ul style="color:#c0392b;padding-left:20px">
                 <?php foreach ($resultado['errores'] as $err): ?>
@@ -67,8 +67,8 @@ Luis,Martinez,luis.mtz@gmail.com,lmtz,Administrador,CC,1000000023,Activo"); ?></
         <?php endif; ?>
 
         <p class="form-note">
-            Las credenciales de todos los usuarios creados se registraron en
-            <code>correo_debug.log</code>.
+            Las credenciales fueron enviadas al correo registrado de cada usuario.
+            Si algún envío falla, aparecerá indicado en la lista de errores.
         </p>
     </div>
 <?php endif; ?>

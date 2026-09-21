@@ -138,16 +138,21 @@ class AdminController
                         'tipo_documento' => $d['tipo_documento'],
                     ]);
 
-                    Correo::enviarCuentaCreada(
+                    $correoEnviado = Correo::enviarCuentaCreada(
                         $d['correo'],
                         $d['nombre'] . ' ' . $d['apellido'],
                         $usernameGenerado,
                         $passwordGenerado
                     );
 
-                    header('Location:index.php?route=usuarios&ok=1');
-                    exit;
-                } catch (Throwable $e) {
+                if ($correoEnviado) {
+                    header('Location:index.php?route=usuarios&ok=1');   
+                } else{
+                    header('Location:index.php?route=usuarios&ok=1&correo=0');
+                }
+                exit;
+                }
+                catch (Throwable $e) {
                     $error = 'No fue posible crear el usuario. Verifica que documento, correo y usuario no estén repetidos.';
                 }
             }
@@ -296,7 +301,7 @@ class AdminController
                                 'tipo_documento' => $tipoDocId,
                         ]);
 
-                        Correo::enviarCuentaCreada(
+                        $correoEnviado = Correo::enviarCuentaCreada(
                             $correo,
                             $nombre . ' ' . $apellido,
                             $username,
@@ -304,6 +309,12 @@ class AdminController
                         );
 
                         $resultado['creados']++;
+
+                        if (!$correoEnviado) {
+                            $resultado['errores'][] =
+                                "Fila {$resultado['total']}: usuario creado, pero no se pudo enviar el correo.";
+                        }
+
                         } catch (Throwable $e) {
                             $resultado['errores'][] = "Fila {$resultado['total']}: " . $e->getMessage();
                         }
