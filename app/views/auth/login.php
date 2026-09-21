@@ -24,14 +24,29 @@
                 <input name="usuario" autocomplete="username">
             </div>
             <br>
-            <div class="field">
+            <div class="field" style="position:relative">
                 <label>Contraseña <span class="req">*</span></label>
-                <input type="password" name="password" autocomplete="current-password">
+                <input type="password" name="password" id="password" autocomplete="current-password">
+                <span class="toggle-password" id="togglePassword" style="position:absolute;right:10px;top:32px;cursor:pointer;font-size:18px;color:#718096">👁</span>
             </div>
             <br>
             <button class="btn btn-primary" style="width:100%" type="submit">Ingresar</button>
         </form>
     </div>
 </div>
+
+<script>
+var pwd = document.getElementById('password');
+var eye = document.getElementById('togglePassword');
+eye.addEventListener('mousedown', function() {
+    pwd.type = 'text';
+});
+eye.addEventListener('mouseup', function() {
+    pwd.type = 'password';
+});
+eye.addEventListener('mouseleave', function() {
+    pwd.type = 'password';
+});
+</script>
 </body>
 </html>
