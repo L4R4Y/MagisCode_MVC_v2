@@ -116,7 +116,14 @@ class EvaluacionController
         $this->permitirSoloAprendiz();
 
         $id = (int) $_POST['evaluacion'];
+        $usuarioId = (int) $_SESSION['usuario'];
         $modelo = new Evaluacion();
+
+        if ($modelo->resultado($id, $usuarioId)) {
+            header('Location: index.php?route=evaluacion&id=' . $id);
+            exit;
+        }
+
         $preguntas = $modelo->preguntas($id);
 
         $correctas = 0;
