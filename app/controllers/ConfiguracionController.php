@@ -49,8 +49,8 @@ class ConfiguracionController
     }
 
     /**
-     * APRENDIZ: puede corregir sus propios datos de contacto (nombre,
-     * apellido, correo, celular), pero no todos los campos del perfil.
+     * APRENDIZ: puede corregir sus propios datos personales (nombre,
+     * apellido y correo), pero no todos los campos del perfil.
      * Documento, usuario, rol, estado y contraseña quedan fuera de este
      * formulario y solo pueden cambiarlos desde la gestión de un
      * administrador (o, para la contraseña, desde el panel de Seguridad).
@@ -69,7 +69,6 @@ class ConfiguracionController
             $nombre = trim($_POST['nombre'] ?? '');
             $apellido = trim($_POST['apellido'] ?? '');
             $correo = trim($_POST['correo'] ?? '');
-            $celular = trim($_POST['celular'] ?? '');
 
             if ($nombre === '' && $apellido === '' && $correo === '') {
                 $error = 'Ingresa nombre, apellido y correo.';
@@ -85,15 +84,12 @@ class ConfiguracionController
                 $error = 'El apellido solo admite letras y debe tener al menos 2 caracteres.';
             } elseif (!filter_var($correo, FILTER_VALIDATE_EMAIL)) {
                 $error = 'Ingresa un correo electrónico válido.';
-            } elseif ($celular !== '' && !preg_match('/^[0-9]{7,15}$/', $celular)) {
-                $error = 'El celular debe contener solo números (7 a 15 dígitos).';
             } else {
                 try {
                     (new Usuario())->actualizarPerfilAprendiz((int) $_SESSION['usuario'], [
                         'nombre' => $nombre,
                         'apellido' => $apellido,
                         'correo' => $correo,
-                        'celular' => $celular !== '' ? $celular : null,
                     ]);
 
                     // El nombre en sesión se usa en el menú y encabezado.

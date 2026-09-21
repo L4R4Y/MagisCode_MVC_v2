@@ -36,8 +36,8 @@ class Usuario extends Model
     }
 
     /**
-     * Permite al Aprendiz corregir/actualizar únicamente los datos de
-     * contacto de su perfil (nombre, apellido, correo y celular).
+     * Permite al Aprendiz corregir/actualizar únicamente los datos
+     * personales de su perfil (nombre, apellido y correo).
      * Documento, username, rol, estado y contraseña NO se tocan aquí:
      * solo un administrador puede modificarlos.
      * El filtro id_rol_u = 3 evita que este método se use para editar
@@ -47,7 +47,7 @@ class Usuario extends Model
     {
         $stmt = $this->db->prepare(
             'UPDATE usuario
-             SET nombre = ?, apellido = ?, correo = ?, celular = ?
+             SET nombre = ?, apellido = ?, correo = ?
              WHERE id_usuario = ? AND id_rol_u = 3'
         );
 
@@ -55,7 +55,6 @@ class Usuario extends Model
             $datos['nombre'],
             $datos['apellido'],
             $datos['correo'],
-            $datos['celular'],
             $id,
         ]);
     }

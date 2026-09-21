@@ -34,10 +34,10 @@ $usuario = $usuario ?? [];
     </div>
 
     <?php if ($rolId === 3): ?>
-        <!-- APRENDIZ: puede corregir sus datos de contacto, pero no todos los campos del perfil. -->
+        <!-- APRENDIZ: puede corregir sus datos personales, pero no todos los campos del perfil. -->
         <div class="panel">
             <h2>Mis datos</h2>
-            <p>Actualiza tu nombre, correo o celular si ya no te sirven o si están mal escritos.</p>
+            <p>Actualiza tu nombre, apellido o correo si ya no te sirven o si están mal escritos.</p>
             <p class="form-note">Los campos marcados con <span class="req">*</span> son obligatorios.</p>
 
             <form method="post" action="index.php?route=actualizar-perfil" class="form-grid">
@@ -52,10 +52,6 @@ $usuario = $usuario ?? [];
                 <div class="field">
                     <label>Correo <span class="req">*</span></label>
                      <input type="email" name="correo" value="<?= htmlspecialchars($usuario['correo'] ?? '') ?>">
-                </div>
-                <div class="field">
-                    <label>Celular</label>
-                    <input name="celular" value="<?= htmlspecialchars($usuario['celular'] ?? '') ?>" placeholder="Ej: 3001234567">
                 </div>
 
                 <div class="field">
