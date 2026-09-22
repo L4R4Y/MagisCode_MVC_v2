@@ -1,6 +1,7 @@
 <?php
 
 require_once __DIR__ . '/../models/Usuario.php';
+require_once __DIR__ . '/../helpers/Normalizador.php';
 
 class AuthController
 {
@@ -15,7 +16,7 @@ class AuthController
             return;
         }
 
-        $username = trim($_POST['usuario'] ?? '');
+        $username = Normalizador::texto($_POST['usuario'] ?? '');
         $password = $_POST['password'] ?? '';
 
         if ($username === '' && $password === '') {

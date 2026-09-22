@@ -2,6 +2,7 @@
 
 require_once __DIR__ . '/../models/Usuario.php';
 require_once __DIR__ . '/../models/Curso.php';
+require_once __DIR__ . '/../helpers/Normalizador.php';
 require_once __DIR__ . '/../helpers/Correo.php';
 
 class AdminController
@@ -45,9 +46,9 @@ class AdminController
         $error = '';
 
         if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-            $nombre = trim($_POST['nombre'] ?? '');
-            $apellido = trim($_POST['apellido'] ?? '');
-            $correo = trim($_POST['correo'] ?? '');
+            $nombre = Normalizador::texto($_POST['nombre'] ?? '');
+            $apellido = Normalizador::texto($_POST['apellido'] ?? '');
+            $correo = Normalizador::texto($_POST['correo'] ?? '');
             $rol = (int) $_POST['rol'];
 
             if ($nombre === '' || !preg_match('/^[\p{L}\s]{2,300}$/u', $nombre)) {
@@ -97,9 +98,9 @@ class AdminController
 
         if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $d['id_usuario'] = trim($_POST['id_usuario'] ?? '');
-            $d['nombre'] = trim($_POST['nombre'] ?? '');
-            $d['apellido'] = trim($_POST['apellido'] ?? '');
-            $d['correo'] = trim($_POST['correo'] ?? '');
+            $d['nombre'] = Normalizador::texto($_POST['nombre'] ?? '');
+            $d['apellido'] = Normalizador::texto($_POST['apellido'] ?? '');
+            $d['correo'] = Normalizador::texto($_POST['correo'] ?? '');
             $d['rol'] = (int) $_POST['rol'];
             $d['tipo_documento'] = (int) ($_POST['tipo_documento'] ?? 1);
 
@@ -242,10 +243,10 @@ class AdminController
                         $resultado['total']++;
                         $row = fn($k) => $fila[$mapaCol[$k] ?? -1] ?? '';
 
-                        $nombre = trim($row('nombre'));
-                        $apellido = trim($row('apellido'));
-                        $correo = trim($row('correo'));
-                        $username = trim($row('username') ?? $row('usuario'));
+                        $nombre = Normalizador::texto($row('nombre'));
+                        $apellido = Normalizador::texto($row('apellido'));
+                        $correo = Normalizador::texto($row('correo'));
+                        $username = Normalizador::texto($row('username') ?? $row('usuario'));
                         $rolRaw = strtolower(trim($row('rol')));
                         $tipoDocRaw = strtolower(trim($row('tipo_documento')));
                         $docRaw = trim($row('documento') ?? $row('id_usuario'));

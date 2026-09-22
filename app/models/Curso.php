@@ -47,6 +47,7 @@ class Curso extends Model
 
     public function crear(array $datos): int
     {
+        $datos = Normalizador::campos($datos, ['titulo', 'descripcion']);
         $stmt = $this->db->prepare(
             'INSERT INTO curso (titulo_curso, descripcion_curso, ruta_imagen, estado_curso, id_usuario_c)
              VALUES (?, ?, ?, ?, ?)'

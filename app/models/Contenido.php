@@ -46,6 +46,7 @@ class Contenido extends Model
 
     public function crearModulo(array $datos): int
     {
+        $datos = Normalizador::campos($datos, ['nombre']);
         $stmt = $this->db->prepare(
             'INSERT INTO modulo (nombre_modulo, orden_modulo, id_curso_m) VALUES (?, ?, ?)'
         );
@@ -56,6 +57,7 @@ class Contenido extends Model
 
     public function crearLeccion(array $datos): int
     {
+        $datos = Normalizador::campos($datos, ['titulo']);
         $stmt = $this->db->prepare(
             'INSERT INTO leccion (titulo_leccion, orden_leccion, id_modulo_l) VALUES (?, ?, ?)'
         );
@@ -66,6 +68,7 @@ class Contenido extends Model
 
     public function crearRecurso(array $datos): int
     {
+        $datos = Normalizador::campos($datos, ['nombre']);
         $stmt = $this->db->prepare(
             'INSERT INTO recurso (nombre_recurso, tipo_recurso, ruta_archivo, duracion, id_leccion_r)
              VALUES (?, ?, ?, ?, ?)'

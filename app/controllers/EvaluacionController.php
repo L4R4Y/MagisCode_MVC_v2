@@ -3,6 +3,7 @@
 require_once __DIR__ . '/../models/Evaluacion.php';
 require_once __DIR__ . '/../models/Curso.php';
 require_once __DIR__ . '/../models/Certificado.php';
+require_once __DIR__ . '/../helpers/Normalizador.php';
 
 class EvaluacionController
 {
@@ -30,8 +31,8 @@ class EvaluacionController
 
         if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             (new Evaluacion())->crear([
-                'titulo' => trim($_POST['titulo']),
-                'descripcion' => trim($_POST['descripcion']),
+                'titulo' => Normalizador::texto($_POST['titulo']),
+                'descripcion' => Normalizador::texto($_POST['descripcion']),
                 'aprobacion' => (float) $_POST['aprobacion'],
                 'curso' => $curso,
             ]);
@@ -58,13 +59,13 @@ class EvaluacionController
 
         if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $tipo = trim($_POST['tipo'] ?? '');
-            $pregunta = trim($_POST['pregunta'] ?? '');
+            $pregunta = Normalizador::texto($_POST['pregunta'] ?? '');
             $respuestas = [];
 
             foreach (($_POST['respuesta'] ?? []) as $indice => $texto) {
                 if (trim($texto) !== '') {
                     $respuestas[] = [
-                        'texto' => trim($texto),
+                        'texto' => Normalizador::texto($texto),
                         'correcta' => (string) $indice === (string) ($_POST['correcta'] ?? ''),
                     ];
                 }

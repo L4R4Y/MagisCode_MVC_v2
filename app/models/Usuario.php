@@ -45,6 +45,7 @@ class Usuario extends Model
      */
     public function actualizarPerfilAprendiz(int $id, array $datos): bool
     {
+        $datos = Normalizador::campos($datos, ['nombre', 'apellido', 'correo']);
         $stmt = $this->db->prepare(
             'UPDATE usuario
              SET nombre = ?, apellido = ?, correo = ?
@@ -135,6 +136,9 @@ class Usuario extends Model
 
     public function actualizarDatos(int $id, string $nombre, string $apellido, string $correo, int $rol): bool
     {
+        $nombre = Normalizador::texto($nombre);
+        $apellido = Normalizador::texto($apellido);
+        $correo = Normalizador::texto($correo);
         $stmt = $this->db->prepare(
             'UPDATE usuario SET nombre = ?, apellido = ?, correo = ?, id_rol_u = ? WHERE id_usuario = ?'
         );
@@ -163,6 +167,7 @@ class Usuario extends Model
 
     public function crear(array $datos): bool
     {
+        $datos = Normalizador::campos($datos, ['nombre', 'apellido', 'correo', 'username']);
         $stmt = $this->db->prepare(
             'INSERT INTO usuario
              (id_usuario, nombre, apellido, correo, username, hash_contrasena,

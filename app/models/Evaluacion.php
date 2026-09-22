@@ -106,6 +106,7 @@ class Evaluacion extends Model
 
     public function crear(array $datos): int
     {
+        $datos = Normalizador::campos($datos, ['titulo', 'descripcion']);
         $stmt = $this->db->prepare(
             'INSERT INTO evaluacion (titulo_evaluacion, descripcion_evaluacion, puntaje_aprobacion, id_estado_e, id_curso_e)
              VALUES (?, ?, ?, 1, ?)'
@@ -117,6 +118,12 @@ class Evaluacion extends Model
 
     public function crearPregunta(array $datos): int
     {
+        $datos = Normalizador::campos($datos, ['pregunta']);
+        foreach ($datos['respuestas'] as &$respuesta) {
+            $respuesta['texto'] = Normalizador::texto($respuesta['texto']);
+        }
+        unset($respuesta);
+
         $stmt = $this->db->prepare(
             'INSERT INTO pregunta (tipo_pregunta, pregunta, id_evaluacion_p) VALUES (?, ?, ?)'
         );

@@ -3,6 +3,7 @@
 require_once __DIR__ . '/../models/Curso.php';
 require_once __DIR__ . '/../models/Contenido.php';
 require_once __DIR__ . '/../models/Evaluacion.php';
+require_once __DIR__ . '/../helpers/Normalizador.php';
 require_once __DIR__ . '/../helpers/VideoInfo.php';
 
 class CursoController
@@ -62,8 +63,8 @@ class CursoController
             }
 
             (new Curso())->crear([
-                'titulo' => trim($_POST['titulo']),
-                'descripcion' => trim($_POST['descripcion']),
+                'titulo' => Normalizador::texto($_POST['titulo']),
+                'descripcion' => Normalizador::texto($_POST['descripcion']),
                 'imagen' => $imagen,
                 'instructor' => (int) $_SESSION['usuario'],
             ]);
@@ -147,7 +148,7 @@ class CursoController
 
         if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             (new Contenido())->crearModulo([
-                'nombre' => trim($_POST['nombre']),
+                'nombre' => Normalizador::texto($_POST['nombre']),
                 'orden' => (int) $_POST['orden'],
                 'curso' => (int) $_POST['curso'],
             ]);
@@ -163,7 +164,7 @@ class CursoController
 
         if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             (new Contenido())->crearLeccion([
-                'titulo' => trim($_POST['titulo']),
+                'titulo' => Normalizador::texto($_POST['titulo']),
                 'orden' => (int) $_POST['orden'],
                 'modulo' => (int) $_POST['modulo'],
             ]);
@@ -215,7 +216,7 @@ class CursoController
         }
 
         (new Contenido())->crearRecurso([
-            'nombre' => trim($_POST['nombre']),
+            'nombre' => Normalizador::texto($_POST['nombre']),
             'tipo' => $tipo,
             'ruta' => $ruta,
             'duracion' => $duracion,

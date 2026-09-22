@@ -1,6 +1,7 @@
 <?php
 
 require_once __DIR__ . '/../models/Usuario.php';
+require_once __DIR__ . '/../helpers/Normalizador.php';
 
 class ConfiguracionController
 {
@@ -66,9 +67,9 @@ class ConfiguracionController
         $ok = '';
 
         if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-            $nombre = trim($_POST['nombre'] ?? '');
-            $apellido = trim($_POST['apellido'] ?? '');
-            $correo = trim($_POST['correo'] ?? '');
+            $nombre = Normalizador::texto($_POST['nombre'] ?? '');
+            $apellido = Normalizador::texto($_POST['apellido'] ?? '');
+            $correo = Normalizador::texto($_POST['correo'] ?? '');
 
             if ($nombre === '' && $apellido === '' && $correo === '') {
                 $error = 'Ingresa nombre, apellido y correo.';
